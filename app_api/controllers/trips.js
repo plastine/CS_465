@@ -1,58 +1,57 @@
+const mongoose = require('mongoose');
+require('../models/travlr');
 
-const mongoose = require ('mongoose');
-const Trip = require('../models/travlr');
-const Model = mongoose.model('trips');
+const Trip = mongoose.model('trips');
 
-//GET: /trips - lists all the trips
-//Regardless of outcome, response must include HTML status vode
-// and JSON Message to the requesting client
-const tripsList = async(req, res) => {
-    const q = await Model
-        .find({})
-        .exec();
-
-        console.log(q)
-
-        if(!q)
-        {
-            return res
-                .status(404)
-                .json(err);
-        }
-        else {
-            return res
-                .status(200)
-                .json(q);  
-        }
-
-    
+// GET /api/trips
+const tripsList = async (req, res) => {
+  try {
+    const trips = await Trip.find({}).exec();
+    console.log(trips);
+    return res.status(200).json(trips);
+  } catch (err) {
+    return res.status(500).json(err);
+  }
 };
 
-//GET: /trips - lists all the trips
-//Regardless of outcome, response must include HTML status vode
-// and JSON Message to the requesting client
+// GET /api/trips/:tripCode
+const tripsFindByCode = async (req, res) => {
+  try {
+    const trip = await Trip.findOne({ code: req.params.tripCode }).exec();
+    console.log(trip);
 
-const tripsFindByCode = async(req, res) => {
-    const q = await Model
-        .find({'code' : req.params.tripCode })
-        .exec();
+    if (!trip) {
+      return res.status(404).json({ message: 'Trip not found' });
+    }
 
-        console.log(q)
-
-        if(!q)
-        {
-            return res
-                .status(404)
-                .json(err);
-        }
-        else {
-            return res
-                .status(200)
-                .json(q);  
-        }
-
+    return res.status(200).json(trip);
+  } catch (err) {
+    return res.status(500).json(err);
+  }
 };
+
+// POST /api/trips
+const tripsAddTrip = async (req, res) => {
+  try {
+    const newTrip = await Trip.create({
+      code: req.body.code,
+      name: req.body.name,
+      length: req.body.length,
+      start: req.body.start,
+      resort: req.body.resort,
+      perPerson: req.body.perPerson,
+      image: req.body.image,
+      description: req.body.description
+    });
+
+    return res.status(201).json(newTrip);
+  } catch (err) {
+    return res.status(400).json(err);
+  }
+};
+
 module.exports = {
-    tripsList,
-    tripsFindByCode
+  tripsList,
+  tripsFindByCode,
+  tripsAddTrip
 };
